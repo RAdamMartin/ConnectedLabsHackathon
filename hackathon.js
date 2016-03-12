@@ -1,16 +1,9 @@
-/**
- * This sample demonstrates a simple skill built with the Amazon Alexa Skills Kit.
- * The Intent Schema, Custom Slots, and Sample Utterances for this skill, as well as
- * testing instructions are located at http://amzn.to/1LzFrj6
- *
- * For additional samples, visit the Alexa Skills Kit Getting Started guide at
- * http://amzn.to/1LGWsLG
- */
-
-// Route the incoming request based on type (LaunchRequest, IntentRequest,
-// etc.) The JSON body of the request is provided in the event parameter.
 var token = "42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5";
 var devKey = "f9395b6cbc1896eb5a93f9e5fb28f033";
+
+var my_lists = 'https://api.trello.com/1/boards/56e41c245958f895130cb056?lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5'
+var my_cards_and_lists = 'https://api.trello.com/1/boards/56e41c245958f895130cb056?cards=all&card_fields=idList,closed,desc,due,name&lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5'
+
 const https = require('https');
 
 exports.handler = function (event, context) {
@@ -105,28 +98,29 @@ function onSessionEnded(sessionEndedRequest, session) {
 
 function getWelcomeResponse(callback) {
     // If we wanted to initialize the session to have some attributes we could add those here.
-    var req = https.get('https://api.trello.com/1/boards/56e41c245958f895130cb056?lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033',
+    //var req = https.get('https://api.trello.com/1/boards/56e41c245958f895130cb056?lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033',
+    https.get(my_lists,
                   function(res){
                       res.on('data', function (chunk) {
-                        console.log('BODY: ' + chunk);
-                            var board = JSON.parse(chunk);
-                            var sessionAttributes = {};
-                            var cardTitle = "Welcome";
-                            var speechOutput = '';
-                            var lists = board.lists;
-                            console.log(lists);
-                            sessionAttributes = {
-                                board : board,
-                                lists : lists
-                            };
-                            speechOutput = getListNames(sessionAttributes, 5);
-                            // If the user either does not reply to the welcome message or says something that is not
-                            // understood, they will be prompted again with this text.
-                            var repromptText = "You can ask for cards from lists or by due date.  Or you can modify your cards and lists!  For example, say: What's due today?";
-                            var shouldEndSession = false;
+                        var board = JSON.parse(chunk);
+                        var sessionAttributes = {};
+                        var cardTitle = "Welcome";
+                        var speechOutput = '';
+                        var lists = board.lists;
+                        var cards = board.cards;
+                        sessionAttributes = {
+                            board : board,
+                            lists : lists,
+                            cards : cards
+                        };
+                        speechOutput = getListNames(sessionAttributes, 5);
+                        // If the user either does not reply to the welcome message or says something that is not
+                        // understood, they will be prompted again with this text.
+                        var repromptText = "You can ask for cards from lists or by due date.  Or you can modify your cards and lists!  For example, say: What's due today?";
+                        var shouldEndSession = false;
 
-                            callback(sessionAttributes,
-                                buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+                        callback(sessionAttributes,
+                            buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
                       });
                 });
 }
@@ -253,14 +247,3 @@ function buildResponse(sessionAttributes, speechletResponse) {
         response: speechletResponse
     };
 }
-
-// function httpGetAsync(theUrl, callback, innerCallback)
-// {
-//     var xmlHttp = new XMLHttpRequest();
-//     xmlHttp.onreadystatechange = function() {
-//         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-//             callback(innerCallback, xmlHttp.responseText);
-//     }
-//     xmlHttp.open("GET", theUrl, true); // true for asynchronous
-//     xmlHttp.send(null);
-// }
