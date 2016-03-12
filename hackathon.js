@@ -1,6 +1,8 @@
 var token = "42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5";
 var devKey = "f9395b6cbc1896eb5a93f9e5fb28f033";
 
+var boardId = "56e41c245958f895130cb056";
+
 var my_lists = 'https://api.trello.com/1/boards/56e41c245958f895130cb056?lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5'
 var my_cards_and_lists = 'https://api.trello.com/1/boards/56e41c245958f895130cb056?cards=all&card_fields=idList,closed,desc,due,name&lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5'
 
