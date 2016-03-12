@@ -186,6 +186,33 @@ function toTitleCase(str)
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 
+function getCardsFromList(intent, session, callback){
+    https.get(my_cards_and_lists,
+                  function(res){
+                      res.on('data', function (chunk) {
+                        var board = JSON.parse(chunk);
+                        var sessionAttributes = {};
+                        var cardTitle = "Welcome";
+                        var speechOutput = '';
+                        var lists = board.lists;
+                        var cards = board.cards;
+                        sessionAttributes = {
+                            board : board,
+                            lists : lists,
+                            cards : cards
+                        };
+                        speechOutput = getListNames(sessionAttributes, 5);
+                        // If the user either does not reply to the welcome message or says something that is not
+                        // understood, they will be prompted again with this text.
+                        var repromptText = "You can ask for cards from lists or by due date.  Or you can modify your cards and lists!  For example, say: What's due today?";
+                        var shouldEndSession = false;
+
+                        callback(sessionAttributes,
+                            buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+                      });
+                });
+}
+
 // function getColorFromSession(intent, session, callback) {
 //     var favoriteColor;
 //     var repromptText = null;
