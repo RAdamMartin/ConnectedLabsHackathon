@@ -77,8 +77,8 @@ function onIntent(intentRequest, session, callback) {
         listCardsOnList(intent, session, callback);
         // getWelcomeResponse(callback);
     } else if ("WhatsMyColorIntent" === intentName) {
-        getColorFromSession(intent, session, callback);
-        // getWelcomeResponse(callback);
+        // getColorFromSession(intent, session, callback);
+        getWelcomeResponse(callback);
     } else if ("AMAZON.HelpIntent" === intentName) {
         getWelcomeResponse(callback);
     } else {
@@ -97,7 +97,6 @@ function onSessionEnded(sessionEndedRequest, session) {
 }
 
 // --------------- Functions that control the skill's behavior -----------------------
-
 function getWelcomeResponse(callback) {
     // If we wanted to initialize the session to have some attributes we could add those here.
     //var req = https.get('https://api.trello.com/1/boards/56e41c245958f895130cb056?lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033',
@@ -187,37 +186,31 @@ function toTitleCase(str)
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 
-function createFavoriteColorAttributes(favoriteColor) {
-    return {
-        favoriteColor: favoriteColor
-    };
-}
+// function getColorFromSession(intent, session, callback) {
+//     var favoriteColor;
+//     var repromptText = null;
+//     var sessionAttributes = {};
+//     var shouldEndSession = false;
+//     var speechOutput = "";
 
-function getColorFromSession(intent, session, callback) {
-    var favoriteColor;
-    var repromptText = null;
-    var sessionAttributes = {};
-    var shouldEndSession = false;
-    var speechOutput = "";
+//     if (session.attributes) {
+//         favoriteColor = session.attributes.favoriteColor;
+//     }
 
-    if (session.attributes) {
-        favoriteColor = session.attributes.favoriteColor;
-    }
+//     if (favoriteColor) {
+//         speechOutput = "Your favorite color is " + favoriteColor + ". Goodbye.";
+//         shouldEndSession = true;
+//     } else {
+//         speechOutput = "I'm not sure what your favorite color is, you can say, my favorite color " +
+//             " is red";
+//     }
 
-    if (favoriteColor) {
-        speechOutput = "Your favorite color is " + favoriteColor + ". Goodbye.";
-        shouldEndSession = true;
-    } else {
-        speechOutput = "I'm not sure what your favorite color is, you can say, my favorite color " +
-            " is red";
-    }
-
-    // Setting repromptText to null signifies that we do not want to reprompt the user.
-    // If the user does not respond or says something that is not understood, the session
-    // will end.
-    callback(sessionAttributes,
-         buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
-}
+//     // Setting repromptText to null signifies that we do not want to reprompt the user.
+//     // If the user does not respond or says something that is not understood, the session
+//     // will end.
+//     callback(sessionAttributes,
+//          buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
+// }
 
 // --------------- Helpers that build all of the responses -----------------------
 
