@@ -2,9 +2,14 @@ var token = "42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5";
 var devKey = "f9395b6cbc1896eb5a93f9e5fb28f033";
 
 var boardId = "56e41c245958f895130cb056";
+var dailyId = "56e4408fb254d9f1236f8d80";
+var todoId = "56e49f558015cc9ceb75b59a";
 
-var my_lists = 'https://api.trello.com/1/boards/56e41c245958f895130cb056?lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5'
-var my_cards_and_lists = 'https://api.trello.com/1/boards/56e41c245958f895130cb056?cards=all&card_fields=idList,closed,desc,due,name&lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5'
+var DAILY_GET = 'https://api.trello.com/1/lists/56e4408fb254d9f1236f8d80?cards=all&card_fields=idList,closed,desc,due,name&lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5';
+
+var TODO_GET = 'https://api.trello.com/1/lists/56e49f558015cc9ceb75b59a?cards=all&card_fields=idList,closed,desc,due,name&lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5';
+
+var ALL_CARDS_GET = 'https://api.trello.com/1/boards/56e41c245958f895130cb056?cards=all&card_fields=idList,closed,desc,due,name&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5';
 
 const https = require('https');
 
@@ -187,6 +192,7 @@ function toTitleCase(str)
 }
 
 function getCardsFromList(intent, session, callback){
+    //intent.slot.ListName
     https.get(my_cards_and_lists,
                   function(res){
                       res.on('data', function (chunk) {
@@ -213,31 +219,71 @@ function getCardsFromList(intent, session, callback){
                 });
 }
 
-// function getColorFromSession(intent, session, callback) {
-//     var favoriteColor;
-//     var repromptText = null;
-//     var sessionAttributes = {};
-//     var shouldEndSession = false;
-//     var speechOutput = "";
+function addCard(intent, session, callback){
+    //CardName, CardDue, ListName
+}
 
-//     if (session.attributes) {
-//         favoriteColor = session.attributes.favoriteColor;
-//     }
+function deleteCard(intent, session, callback){
+    //CardName, ListName
+}
 
-//     if (favoriteColor) {
-//         speechOutput = "Your favorite color is " + favoriteColor + ". Goodbye.";
-//         shouldEndSession = true;
-//     } else {
-//         speechOutput = "I'm not sure what your favorite color is, you can say, my favorite color " +
-//             " is red";
-//     }
+function moveCard(intent, session, callback){
+    //CardName, ListName, ListNameDest
+}
 
-//     // Setting repromptText to null signifies that we do not want to reprompt the user.
-//     // If the user does not respond or says something that is not understood, the session
-//     // will end.
-//     callback(sessionAttributes,
-//          buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
-// }
+function changeCardName(intent, session, callback){
+    //CardName, ListName
+}
+
+function changeCardDescription(intent, session, callback){
+    //CardName, ListName, CardNewDescription
+}
+
+function changeCardDueDate(intent, session, callback){
+    //CardName, ListName, CardNewDescription
+}
+
+function completeCard(intent, session, callback){
+    //CardName, ListName
+}
+
+function addList(intent, session, callback){
+    //ListName
+}
+
+function deleteList(intent, session, callback){
+    //ListName
+}
+
+function createDailyList(intent, session, callback){
+    //ListName
+}
+
+function deleteDailyList(intent, session, callback){
+    //ListName
+}
+
+function whatsDue(intent, session, callback){
+    //ListName, DueDate
+}
+
+function whatsOverdue(intent, session, callback){
+    //ListName
+}
+
+function completeAllTasks(intent, session, callback){
+    //ListName, DueDate
+}
+
+function deleteAllTasks(intent, session, callback){
+    //ListName, DueDate
+}
+
+function moveAllTasks(intent, session, callback){
+    //ListName, DueDate
+}
+
+
 
 // --------------- Helpers that build all of the responses -----------------------
 
