@@ -1,0 +1,61 @@
+{
+  "session": {
+    "sessionId": "SessionId.4763e810-fa99-46d1-8dec-25e14b8aee6a",
+    "application": {
+      "applicationId": "amzn1.echo-sdk-ams.app.6e3fa146-e20b-40c5-ac13-8dac152d78ef"
+    },
+    "attributes": {
+      "lists": [
+        {
+          "id": "56e4409e93b2aa83aa39add9",
+          "name": "Life Goals"
+        },
+        {
+          "id": "56e4408fb254d9f1236f8d80",
+          "name": "Daily Tasks"
+        },
+        {
+          "id": "56e445a1190e3aaffcf404a3",
+          "name": "Winning things"
+        }
+      ],
+      "board": {
+        "id": "56e41c245958f895130cb056",
+        "name": "Alexa Test",
+        "desc": "",
+        "lists": [
+          {
+            "id": "56e4409e93b2aa83aa39add9",
+            "name": "Life Goals"
+          },
+          {
+            "id": "56e4408fb254d9f1236f8d80",
+            "name": "Daily Tasks"
+          },
+          {
+            "id": "56e445a1190e3aaffcf404a3",
+            "name": "Winning things"
+          }
+        ]
+      }
+    },
+    "user": {
+      "userId": "amzn1.echo-sdk-account.AEHP7YYXQBDGGPVCU6YPDEZZFC7HWAREY5LBK25QCM3TW6SVKY7F6"
+    },
+    "new": false
+  },
+  "request": {
+    "type": "IntentRequest",
+    "requestId": "EdwRequestId.d3e2325d-07eb-4dd9-a339-b64fd566ae97",
+    "timestamp": "2016-03-12T17:37:20Z",
+    "intent": {
+      "name": "MyColorIsIntent",
+      "slots": {
+        "Color": {
+          "name": "Color",
+          "value": "Life goals"
+        }
+      }
+    }
+  }
+}
