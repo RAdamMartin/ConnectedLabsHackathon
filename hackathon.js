@@ -7,9 +7,14 @@ var todoId = "56e49f558015cc9ceb75b59a";
 
 var DAILY_GET = 'https://api.trello.com/1/lists/56e4408fb254d9f1236f8d80?cards=all&card_fields=idList,closed,desc,due,name&lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5';
 
-var TODO_GET = 'https://api.trello.com/1/lists/56e49f558015cc9ceb75b59a?cards=all&card_fields=idList,closed,desc,due,name&lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5';
+var TODO_GET = 'https://api.trello.com/1/lists/56e49f558015cc9ceb75b59a?cards=all&card_fields=idList,desc,due,name&lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5';
+
+var OPEN_CARDS_GET = 'https://api.trello.com/1/boards/56e41c245958f895130cb056?fields=&cards=open&card_fields=idList,closed,due,name&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5';
 
 var ALL_CARDS_GET = 'https://api.trello.com/1/boards/56e41c245958f895130cb056?cards=all&card_fields=idList,closed,desc,due,name&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5';
+
+var OTHER_ASSIGNMENTS_GET = 'https://api.trello.com/1/members/me?lists=open&boards=open&cards=open&card_fields=name,due,idList&fields=username&key=f9395b6cbc1896eb5a93f9e5fb28f033&token=42150356c66b2564943af3e6e59bc4000c374574f5b1c8d9cfb8245ff12188d5';
+
 
 const https = require('https');
 
@@ -76,18 +81,43 @@ function onIntent(intentRequest, session, callback) {
     var intent = intentRequest.intent,
         intentName = intentRequest.intent.name;
 
-    // Dispatch to your skill's intent handlers
-    if ("MyColorIsIntent" === intentName) {
-        // setColorInSession(intent, session, callback);
-        listCardsOnList(intent, session, callback);
-        // getWelcomeResponse(callback);
-    } else if ("WhatsMyColorIntent" === intentName) {
-        // getColorFromSession(intent, session, callback);
-        getWelcomeResponse(callback);
-    } else if ("AMAZON.HelpIntent" === intentName) {
-        getWelcomeResponse(callback);
-    } else {
-        throw "Invalid intent";
+
+    switch(intentName){
+        case "AMAZON.HelpIntent":
+            getWelcomeResponse(callback);
+            break;
+        case "AMAZON.YesIntent":
+            //TODO
+            break;
+        case "AMAZON.NoIntent":
+            //TODO
+            break;
+        case "addCard":
+            //TODO
+            break;
+        case "addDailyCard":
+            //TODO
+            break;
+        case "postponeCard":
+            //TODO
+            break;
+        case "completeCard":
+            //TODO
+            break;
+        case "deleteCard":
+            //TODO
+            break;
+        case "whatsDue":
+            //TODO
+            break;
+        case "nextCard":
+            //TODO
+            break;
+        case "previousCard":
+            //TODO
+            break;
+        default :
+            throw "Invalid intent"
     }
 }
 
@@ -103,32 +133,12 @@ function onSessionEnded(sessionEndedRequest, session) {
 
 // --------------- Functions that control the skill's behavior -----------------------
 function getWelcomeResponse(callback) {
-    // If we wanted to initialize the session to have some attributes we could add those here.
-    //var req = https.get('https://api.trello.com/1/boards/56e41c245958f895130cb056?lists=open&list_fields=name&fields=name,desc&key=f9395b6cbc1896eb5a93f9e5fb28f033',
-    https.get(my_lists,
-                  function(res){
-                      res.on('data', function (chunk) {
-                        var board = JSON.parse(chunk);
-                        var sessionAttributes = {};
-                        var cardTitle = "Welcome";
-                        var speechOutput = '';
-                        var lists = board.lists;
-                        var cards = board.cards;
-                        sessionAttributes = {
-                            board : board,
-                            lists : lists,
-                            cards : cards
-                        };
-                        speechOutput = getListNames(sessionAttributes, 5);
-                        // If the user either does not reply to the welcome message or says something that is not
-                        // understood, they will be prompted again with this text.
-                        var repromptText = "You can ask for cards from lists or by due date.  Or you can modify your cards and lists!  For example, say: What's due today?";
-                        var shouldEndSession = false;
+    var speechOutput = 'Welcome to Alexa tasks with Trello.  Say "what\'s due today?" to find out what\'s due.';
+    var repromptText = "You can also add tasks with due dates, or daily routine tasks.  For example, say add routine task make dinner to make a daily recurring task make dinner.";
+    var shouldEndSession = false;
+    var cardTitle = 'Welcome';
 
-                        callback(sessionAttributes,
-                            buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
-                      });
-                });
+    callback({}, buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
 function listCardsOnList(intent, session, callback){
@@ -193,98 +203,105 @@ function toTitleCase(str)
 
 function getCardsFromList(intent, session, callback){
     //intent.slot.ListName
-    https.get(my_cards_and_lists,
-                  function(res){
-                      res.on('data', function (chunk) {
-                        var board = JSON.parse(chunk);
-                        var sessionAttributes = {};
-                        var cardTitle = "Welcome";
-                        var speechOutput = '';
-                        var lists = board.lists;
-                        var cards = board.cards;
-                        sessionAttributes = {
-                            board : board,
-                            lists : lists,
-                            cards : cards
-                        };
-                        speechOutput = getListNames(sessionAttributes, 5);
-                        // If the user either does not reply to the welcome message or says something that is not
-                        // understood, they will be prompted again with this text.
-                        var repromptText = "You can ask for cards from lists or by due date.  Or you can modify your cards and lists!  For example, say: What's due today?";
-                        var shouldEndSession = false;
+    https.get(my_cards_and_lists, function(res){
+        res.on('data', function (chunk) {
+            var board = JSON.parse(chunk);
+            var sessionAttributes = {};
+            var cardTitle = "Welcome";
+            var speechOutput = '';
+            var lists = board.lists;
+            var cards = board.cards;
+            sessionAttributes = {
+                board : board,
+                lists : lists,
+                cards : cards
+            };
+            // speechOutput = getListNames(sessionAttributes, 5);
 
-                        callback(sessionAttributes,
-                            buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
-                      });
-                });
+            for(var i = 0; i < max; i++){
+                if(list === intent.slot.ListName){
+                    // for each(card in list){
+                    //     cardList += intent.slot.CardName; 
+                    // }
+                }
+
+            };
+            // If the user either does not reply to the welcome message or says something that is not
+            // understood, they will be prompted again with this text.
+            var repromptText = "You can ask for cards from lists or by due date.  Or you can modify your cards and lists!  For example, say: What's due today?";
+            var shouldEndSession = false;
+
+            callback(sessionAttributes, buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+        });
+    });
 }
 
 function addCard(intent, session, callback){
-    //CardName, CardDue, ListName
+    //Takes in card name and optional due date
+    //If due date is null, sets session.attributes.cardName and return prompt
+    //Else create card on to-do list
+    
+    var tempCardName = intent.slot.CardName;
+    var tempDueDate = intent.slot.CardDue;
+    
+    if(tempDueDate === null){
+        
+    }
+    
 }
 
-function deleteCard(intent, session, callback){
-    //CardName, ListName
+function addDueDate(intent, session, callback){
+    //Asks if the user wants to make the task recurring
+    //If yes - the task goes to DailyTasks list
+    //Else - To-Do list
+
+
 }
 
-function moveCard(intent, session, callback){
-    //CardName, ListName, ListNameDest
+function addRoutine(intent, session, callback){
+    //Takes in card name
+    //Creates card on daily task list
 }
 
-function changeCardName(intent, session, callback){
-    //CardName, ListName
-}
-
-function changeCardDescription(intent, session, callback){
-    //CardName, ListName, CardNewDescription
-}
-
-function changeCardDueDate(intent, session, callback){
-    //CardName, ListName, CardNewDescription
-}
 
 function completeCard(intent, session, callback){
-    //CardName, ListName
-}
-
-function addList(intent, session, callback){
-    //ListName
-}
-
-function deleteList(intent, session, callback){
-    //ListName
-}
-
-function createDailyList(intent, session, callback){
-    //ListName
-}
-
-function deleteDailyList(intent, session, callback){
-    //ListName
-}
-
-function whatsDue(intent, session, callback){
-    //ListName, DueDate
-}
-
-function whatsOverdue(intent, session, callback){
-    //ListName
-}
-
-function completeAllTasks(intent, session, callback){
-    //ListName, DueDate
-}
-
-function deleteAllTasks(intent, session, callback){
-    //ListName, DueDate
-}
-
-function moveAllTasks(intent, session, callback){
-    //ListName, DueDate
+    //Takes in card name
+    //If card is on daily move to completed, if on to-do delete
+    
+    
+    
 }
 
 
+function resetDaily(intent, session, callback){
+    //Move all cards from completed to daily
+    
+    
+    
+}
 
+function getNextDue(intent, session, callback){
+    //If session.cardIndex === undefined, send get request
+    //Find next card on Daily list or with due date of today and return
+    
+    
+    
+}
+
+function processUserResponse(intent, session, callback){
+    //Check if intent response is NEXT or COMPLETE
+    //Take appropriate action
+    
+    
+    
+}
+
+function getAssigned(intent, session, callback){
+    //BONUS
+    
+    
+    
+}
 // --------------- Helpers that build all of the responses -----------------------
 
 function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
