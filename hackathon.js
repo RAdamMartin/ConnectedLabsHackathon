@@ -25,14 +25,14 @@ exports.handler = function (event, context) {
         console.log("event.session.application.applicationId=" + event.session.application.applicationId);
 
         if (event.session.application.applicationId !== "amzn1.echo-sdk-ams.app.6e3fa146-e20b-40c5-ac13-8dac152d78ef") {
-             context.fail("Invalid Application ID");
+            // context.fail("Invalid Application ID");
         }
 
 
         if (event.session.new) {
             onSessionStarted({requestId: event.request.requestId}, event.session);
         }
-
+        
         if (event.request.type === "LaunchRequest") {
             onLaunch(event.request,
                 event.session,
@@ -70,7 +70,7 @@ function onLaunch(launchRequest, session, callback) {
         ", sessionId=" + session.sessionId);
 
     // Dispatch to your skill's launch.
-    getWelcomeResponse(callback);
+    getWelcomeResponse(session.new, callback);
 }
 
 /**
@@ -82,32 +82,29 @@ function onIntent(intentRequest, session, callback) {
 
     var intent = intentRequest.intent,
         intentName = intentRequest.intent.name;
-
+    
 
     switch(intentName){
         case "AMAZON.HelpIntent":
-            getWelcomeResponse(callback);
+            getWelcomeResponse(session.new, callback);
             break;
-        //case "AMAZON.YesIntent":
-            //TODO
-        //    break;
-        //case "AMAZON.NoIntent":
-            //TODO
-        //    break;
+        case "ResetDaily":
+            resetDaily(intent, session, callback);
+            break;
         case "AddCard":
             addCard(intent, session, callback);
+            break;
+        case "AddDueDate":
+            addDueDate(intent, session, callback);
             break;
         case "AddDailyCard":
             addRoutine(intent, session, callback);
             break;
-        case "PostponeCard":
-            //TODO
+        case "LearnMore":
+            learnMore(intent, session, callback);
             break;
         case "CompleteCard":
             completeCard(intent, session, callback);
-            break;
-        case "DeleteCard":
-            //TODO
             break;
         case "WhatsDue":
             whatsDue(intent, session, callback);
@@ -121,8 +118,11 @@ function onIntent(intentRequest, session, callback) {
         case "GetAssigned":
             getAssigned(intent, session, callback);
             break;
+        case "FinishSession":
+            exit(intent, session, callback);
+            break;
         default :
-            throw "Invalid intent"
+            getWelcomeResponse(false, callback);
     }
 }
 
@@ -137,40 +137,23 @@ function onSessionEnded(sessionEndedRequest, session) {
 }
 
 // --------------- Functions that control the skill's behavior -----------------------
-function getWelcomeResponse(callback) {
-    var speechOutput = 'Welcome to Alexa tasks with Trello.  Say "what\'s due today?" to find out what\'s due.';
-    var repromptText = "You can also add tasks with due dates, or daily routine tasks.  For example, say add routine task make dinner to make a daily recurring task make dinner.";
+function getWelcomeResponse(isNew, callback) {
+    var speechOutput;
+    var repromptText;
+    if (isNew)
+    {
+        speechOutput = 'Welcome to your PlanIt.  Say help to explore.';
+        repromptText = "Plese say help to learn more or tell me what to do.";
+    }
+    else
+    {
+        speechOutput = 'Your options include, " add task, add daily task, check whats due on a certain date, and get assignments.';
+        repromptText = 'Your options include, " add task, add daily task, check whats due on a certain date, and get assignments.';
+    }
     var shouldEndSession = false;
     var cardTitle = 'Welcome';
 
     callback({}, buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
-}
-
-function listCardsOnList(intent, session, callback){
-    var cardTitle = intent.name;
-    var name = intent.slots.Color;
-    var listId = ''
-    var repromptText = "";
-    var shouldEndSession = false;
-    var speechOutput = "";
-
-    repromptText = "I'm not sure what your favorite color is. You can tell me your " +
-    "favorite color by saying, my favorite color is red";    
-
-    if (name) {
-        var favoriteColor = toTitleCase(name.value);
-        listId = getListId(session.attributes, favoriteColor);
-    } else {
-        speechOutput = "I didn't understand that name. Please try again";
-    }
-    
-    if (listId == ''){
-        speechOutput = "I can't find that list. Please try again";
-    }
-
-    
-    callback(session,
-         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
 
@@ -234,7 +217,7 @@ function addCard(intent, session, callback){
         }
         
         var cardTitle = "New";
-        var speechOutput = "Please set due date for this task";
+        var speechOutput = "Please set due date for this task by saying, due date is date";
         var repromptText = "You are probably overthinking it";
         var shouldEndSession = false;
         callback(sessionAttributes, buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
@@ -254,9 +237,9 @@ function addDueDate(intent, session, callback){
     //Else - To-Do list
     
     console.log("ADD DUE DATE");
-    intent.slots.CardName = session.sessionAttributes.CardName;
+    intent.slots.CardName.value = session.attributes.cardName;
     
-    if(intent.slots.CardName !== undefined){
+    if(session.attributes.cardName !== undefined){
         addCard(intent, session, callback);
     } else {
         var sessionAttributes = { };
@@ -277,8 +260,8 @@ function addDueDate(intent, session, callback){
 function addRoutine(intent, session, callback){
     //Takes in card name
     //Creates card on daily task list
-    var tempCardName = intent.slots.CardName.value;
-    cardName = tempCardName.replace(/ /g, "%20");
+    var cardName = intent.slots.CardName.value;
+    cardName = cardName.replace(/ /g, "%20");
     //var dueDate = intent.slots.CardDue.value;
     //var listId = intent.slot.ListId;
     var postTrelo = "";
@@ -346,7 +329,7 @@ function completeCard(intent, session, callback){
                 var shouldEndSession = false;    
                 
                 session.attributes.cards = session.attributes.cards.filter(function(card){return card.id != cardId});
-                console.log(session.attributes.cards);
+                session.attributes.cardIndex -= 1;
                 callback(session.attributes, buildSpeechletResponse("Complete", speechOutput, repromptText, shouldEndSession));
             });
         });
@@ -354,37 +337,56 @@ function completeCard(intent, session, callback){
     }
 }
 
+function learnMore(intent, session, callback){
+    
+}
+
+
+
 function resetDaily(intent, session, callback){
     //Move all cards from completed to daily
-    var options = {
-          hostname: 'api.trello.com',
-          port:443,
-          path: '',
-          method: 'PUT'
-        };
+    var cardTitle = "Reset";
+    var speechOutput = "Restarted your daily tasks!";
+    var repromptText = "Say what's due today to find out what you have to do!";
+    var shouldEndSession = false;
+    var i = 0;
+    console.log(CLOSED_CARDS_GET);
     https.get(CLOSED_CARDS_GET,
               function(res) {
                   res.on('data', 
                          function(chunk) {
+                            var options = {
+                                  hostname: 'api.trello.com',
+                                  port:443,
+                                  path: '',
+                                  method: 'PUT'
+                                };
                             var list = JSON.parse(chunk);
                             var cardTitle = "Reset";
                             var speechOutput = "Restarted your daily tasks!";
                             var repromptText = "Say what's due today to find out what you have to do!";
                             var cards = list.cards;
-                            var shouldEndSession = false;
-                            var i;
+                            var max = cards.length;
+                            var j = 0;
+                            if (max == 0){
+                                callback({}, buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+                            }
                             for (i = 0; i < cards.length; i++){
                                 var cardId = cards[i].id;
                                 options.path = "/1/cards/"+cardId+"?closed=false&key=" + devKey + "&token=" + token; 
-                                var req = https.request(options, function(res) {
-                                    res.on('data', function(chunk){
-                                    });
+                                var req = https.request(options, function(res){
+// req.end();
+                                    j++;
+                                    console.log(j);
+                                    if (j == max){
+                                        callback({}, buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+                                    }
                                 });
                                 req.end();
                             }
-                            callback({}, buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
                           });
               });
+  
 }
 
 function whatsDue(intent, session, callback){
@@ -416,7 +418,7 @@ function whatsDue(intent, session, callback){
                             var cards = board.cards;
                             var shouldEndSession = false;
                             d=d.getTime();
-                            var sessionAttributes = {cardIndex : -1, cards : cards, dueTime : d};
+                            var sessionAttributes = {cardIndex : -1, cards : cards, dueTime : d, isToday : isToday};
                             var match = false;
                             var i;
                             for (i = 0; i < cards.length; i++){
@@ -432,8 +434,8 @@ function whatsDue(intent, session, callback){
                                 repromptText = "Say Next, Previous or Complete";
                                 sessionAttributes.cardIndex = i;
                             } else {
-                                speechOutput = "All done!";
-                                shouldEndSession = true;
+                                speechOutput = "There are no tasks due that day!";
+                                repromptText = "Ask me what's due on a certain date or add a task";
                             }
                             callback(sessionAttributes, buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
                           });
@@ -453,7 +455,7 @@ function getNext(intent, session, callback){
         var shouldEndSession = false;
         for (;i < cards.length; i++){
             cardDate = new Date(cards[i].due);
-            if (cards[i].idList == dailyId || (cards[i].due != "null" && cardDate.getTime() == d)){
+            if ((cards[i].idList == dailyId && session.attributes.isToday) || (cards[i].due != "null" && cardDate.getTime() == d)){
                 match = true;
                 break;
             }
@@ -464,6 +466,7 @@ function getNext(intent, session, callback){
             session.attributes.cardIndex = i;
         } else {
             speechOutput = "That's all the tasks!";
+            repromptText  = "";
             session.attributes.cardIndex = i;
         }
         callback(session.attributes, buildSpeechletResponse("Next", speechOutput, repromptText, shouldEndSession));
@@ -484,7 +487,7 @@ function getPrevious(intent, session, callback){
         var shouldEndSession = false;
         for (;i >=0; i--){
             cardDate = new Date(cards[i].due);
-            if (cards[i].idList == dailyId || (cards[i].due != "null" && cardDate.getTime() == d)){
+            if ((cards[i].idList == dailyId && session.attributes.isToday) || (cards[i].due != "null" && cardDate.getTime() == d)){
                 match = true;
                 break;
             }
@@ -499,6 +502,15 @@ function getPrevious(intent, session, callback){
         callback(session.attributes, buildSpeechletResponse("Next", speechOutput, repromptText, shouldEndSession));
     }
     
+}
+
+function exit(intent, session, callback){
+    var speechOutput ='Goodbye' ;
+    var repromptText = '';
+    var shouldEndSession = true;
+    var cardTitle = 'Goodbye';
+
+    callback({}, buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
 function getAssigned(intent, session, callback){
@@ -543,20 +555,14 @@ function getAssigned(intent, session, callback){
                                 repromptText = "Say Next, Previous or Complete";
                                 sessionAttributes.cardIndex = i;
                             } else {
-                                speechOutput = "All done!";
-                                shouldEndSession = true;
+                                speechOutput = "Nothing due that day!";
+                                //shouldEndSession = true;
                             }
                             callback(sessionAttributes, buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
                           });
               });
 }
 // --------------- Helpers that build all of the responses -----------------------
-
-
-function posBuilderNoDue(cardName, cardDesc, listId){
-    var postTrello = "https://api.trello.com/1/cards?key=" + devKey + "&token=" + token + "&name=" + CARDNAME + "&desc=" + CARDDESC + "&idList=" + listId;
-}
-
 function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
     return {
         outputSpeech: {
